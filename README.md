@@ -30,7 +30,8 @@ Draw lines one by one, complete boxes to score, and claim victory!
 - Score tracker and turn indicator.
 - Vibrant animations on box completion.
 
-📸 [Sample Image](https://example.com/grid-game-sample.jpg) *(Replace with your image link)*
+📸 ![Box Grid Duel Screenshot](./asset/grid1.png)  
+*Sample gameplay: Players compete to claim boxes in a 5x5 grid.*
 
 ---
 
@@ -48,7 +49,8 @@ Draw lines one by one, complete boxes to score, and claim victory!
 - High-score leaderboard.
 - Hints for tricky equations (limited uses!).
 
-📸 [Sample Image](https://example.com/math-game-sample.jpg) *(Replace with your image link)*
+📸 ![Math Challenge Screenshot](./asset/math1.png)
+*Sample equation: Solve `3/3-7` before time runs out!*
 
 ---
 
@@ -65,7 +67,10 @@ Draw lines one by one, complete boxes to score, and claim victory!
 - Move counter and timer.
 - Minimalist design with smooth animations.
 
-📸 [Sample Image](https://example.com/hanoi-sample.jpg) *(Replace with your image link)*
+📸 ![Tower of Hanoi Screenshot1](./asset/hanoi1.png)
+  ![Tower of Hanoi Screenshot2](./asset/hanoi2.png)
+  ![Tower of Hanoi Screenshot3](./asset/hanoi3.png)
+*Sample gameplay: Move disks between rods without breaking the rules!*
 
 ---
 ## 🤝 Contribute
