@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dots and Boxes Game</title>
+  <style>
+    canvas {
+      border: 1px solid #000;
+      margin-top: 20px;
+    }
+    input, button {
+      margin: 10px;
+    }
+    #score {
+      font-size: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>Dots and Boxes Game</h1>
+  <input type="number" id="rows" placeholder="Rows" min="2" max="10" value="5">
+  <input type="number" id="cols" placeholder="Columns" min="2" max="10" value="5">
+  <button onclick="startGame()">Start Game</button>
+  <canvas id="gameCanvas"></canvas>
+  <p id="score">Player 1: 0 | Player 2: 0</p>
+
+  <script>
+    let canvas, ctx;
+    let rows, cols, cellSize = 40;
+    let currentPlayer = 1;
+    let scores = { 1: 0, 2: 0 };
+    let horizontalLines = []; // Track drawn horizontal lines
+    let verticalLines = [];   // Track drawn vertical lines
+    let boxes = [];           // Track completed boxes
+
+    function startGame() {
+      rows = parseInt(document.getElementById("rows").value);
+      cols = parseInt(document.getElementById("cols").value);
+      canvas = document.getElementById("gameCanvas");
+      ctx = canvas.getContext("2d");
+
+      // Initialize grid
+      canvas.width = cols * cellSize + 1;
+      canvas.height = rows * cellSize + 1;
+      horizontalLines = Array(rows).fill().map(() => Array(cols - 1).fill(false));
+      verticalLines = Array(rows - 1).fill().map(() => Array(cols).fill(false));
+      boxes = Array(rows - 1).fill().map(() => Array(cols - 1).fill(0));
+
+      drawGrid();
+      canvas.addEventListener("click", handleClick);
+    }
+
+    function drawGrid() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw dots
+      ctx.fillStyle = "black";
+      for (let i = 0; i < rows; i++) {
+        for (let j = 0; j < cols; j++) {
+          ctx.beginPath();
+          ctx.arc(j * cellSize, i * cellSize, 2, 0, Math.PI * 3);
+          ctx.fill();
+        }
+      }
+
+      // Draw horizontal lines
+      ctx.strokeStyle = "gray";
+      ctx.lineWidth = 2;
+      horizontalLines.forEach((row, i) => {
+        row.forEach((drawn, j) => {
+          if (drawn) {
+            ctx.beginPath();
+            ctx.moveTo(j * cellSize, i * cellSize);
+            ctx.lineTo((j + 1) * cellSize, i * cellSize);
+            ctx.stroke();
+          }
+        });
+      });
+
+      // Draw vertical lines
+      verticalLines.forEach((row, i) => {
+        row.forEach((drawn, j) => {
+          if (drawn) {
+            ctx.beginPath();
+            ctx.moveTo(j * cellSize, i * cellSize);
+            ctx.lineTo(j * cellSize, (i + 1) * cellSize);
+            ctx.stroke();
+          }
+        });
+      });
+
+      // Draw completed boxes
+      boxes.forEach((row, i) => {
+        row.forEach((owner, j) => {
+          if (owner > 0) {
+            ctx.fillStyle = owner === 1 ? "red" : "blue";
+            ctx.fillRect(j * cellSize + 2, i * cellSize + 2, cellSize - 4, cellSize - 4);
+          }
+        });
+      });
+    }
+
+    function handleClick(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Convert to grid coordinates
+      const i = Math.floor(y / cellSize);
+      const j = Math.floor(x / cellSize);
+
+      // Check if the click is near a horizontal or vertical line
+      const isHorizontal = (y % cellSize < 5 || y % cellSize > cellSize - 5);
+      const isVertical = (x % cellSize < 5 || x % cellSize > cellSize - 5);
+
+      if (isHorizontal && i < rows && j < cols - 1 && !horizontalLines[i][j]) {
+        horizontalLines[i][j] = true;
+        checkForBox(i, j, "horizontal");
+      } else if (isVertical && j < cols && i < rows - 1 && !verticalLines[i][j]) {
+        verticalLines[i][j] = true;
+        checkForBox(i, j, "vertical");
+      }
+
+      drawGrid();
+      updateScore();
+    }
+
+    function checkForBox(i, j, lineType) {
+      let boxCompleted = false;
+
+      if (lineType === "horizontal") {
+        // Check the box above and below the horizontal line
+        if (i > 0 && isBoxComplete(i - 1, j)) {
+          boxes[i - 1][j] = currentPlayer;
+          boxCompleted = true;
+        }
+        if (i < rows - 1 && isBoxComplete(i, j)) {
+          boxes[i][j] = currentPlayer;
+          boxCompleted = true;
+        }
+      } else if (lineType === "vertical") {
+        // Check the box to the left and right of the vertical line
+        if (j > 0 && isBoxComplete(i, j - 1)) {
+          boxes[i][j - 1] = currentPlayer;
+          boxCompleted = true;
+        }
+        if (j < cols - 1 && isBoxComplete(i, j)) {
+          boxes[i][j] = currentPlayer;
+          boxCompleted = true;
+        }
+      }
+
+      if (boxCompleted) {
+        scores[currentPlayer]++;
+        // Allow the same player to continue
+      } else {
+        currentPlayer = currentPlayer === 1 ? 2 : 1;
+      }
+    }
+
+    function isBoxComplete(row, col) {
+      return (
+        horizontalLines[row][col] &&
+        horizontalLines[row + 1][col] &&
+        verticalLines[row][col] &&
+        verticalLines[row][col + 1]
+      );
+    }
+
+    function updateScore() {
+      document.getElementById("score").textContent =
+        `Player 1: ${scores[1]} | Player 2: ${scores[2]}`;
+
+      // Check if all boxes are filled
+      const totalBoxes = (rows - 1) * (cols - 1);
+      const filledBoxes = boxes.flat().filter(b => b > 0).length;
+      if (filledBoxes === totalBoxes) {
+        alert(`Game Over! Winner: Player ${scores[1] > scores[2] ? 1 : 2}`);
+      }
+    }
+  </script>
+</body>
+</html>
+<!-- Divakar sharma 🤖👍🏼 -->

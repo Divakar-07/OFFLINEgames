@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower of Hanoi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-around;
+            width: 80%;
+            margin-top: 20px;
+        }
+
+        .tower {
+            width: 20px;
+            height: 200px;
+            background-color: #555;
+            position: relative;
+            margin: 0 50px;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column-reverse;
+            align-items: center;
+        }
+
+        .disk {
+            height: 20px;
+            background-color: #ff6f61;
+            border-radius: 5px;
+            margin: 2px 0;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .message {
+            margin-top: 20px;
+            font-size: 18px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tower of Hanoi</h1>
+    <div class="controls">
+        <label for="disks">Number of Disks (3-7):</label>
+        <input type="number" id="disks" min="3" max="7" value="3">
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    <div class="container">
+        <div class="tower" id="tower1" onclick="selectTower(1)"></div>
+        <div class="tower" id="tower2" onclick="selectTower(2)"></div>
+        <div class="tower" id="tower3" onclick="selectTower(3)"></div>
+    </div>
+    <div class="message" id="message"></div>
+
+    <script>
+        let towers = [[], [], []]; // Represents the three towers
+        let selectedTower = null; // Currently selected tower
+        let numberOfDisks = 3; // Default number of disks
+
+        function startGame() {
+            const disksInput = document.getElementById('disks');
+            numberOfDisks = parseInt(disksInput.value);
+
+            if (numberOfDisks < 3 || numberOfDisks > 7) {
+                alert("Please choose a number of disks between 3 and 7.");
+                return;
+            }
+
+            // Reset towers
+            towers = [[], [], []];
+            selectedTower = null;
+            document.getElementById('message').textContent = '';
+
+            // Initialize the first tower with disks
+            for (let i = numberOfDisks; i > 0; i--) {
+                towers[0].push(i);
+            }
+
+            renderTowers();
+        }
+
+        function renderTowers() {
+            const towerElements = document.querySelectorAll('.tower');
+            towerElements.forEach((tower, index) => {
+                tower.innerHTML = ''; // Clear the tower
+                towers[index].forEach(diskSize => {
+                    const disk = document.createElement('div');
+                    disk.className = 'disk';
+                    disk.style.width = `${diskSize * 30}px`; // Larger disks are wider
+                    disk.textContent = diskSize;
+                    tower.appendChild(disk);
+                });
+            });
+        }
+
+        function selectTower(towerIndex) {
+            const tower = towers[towerIndex - 1];
+
+            if (selectedTower === null) {
+                // Select the tower if it has disks
+                if (tower.length > 0) {
+                    selectedTower = towerIndex - 1;
+                    document.getElementById(`tower${towerIndex}`).style.backgroundColor = '#888';
+                }
+            } else {
+                // Move disk from selectedTower to the clicked tower
+                moveDisk(selectedTower, towerIndex - 1);
+                selectedTower = null;
+                resetTowerColors();
+            }
+        }
+
+        function moveDisk(from, to) {
+            const disk = towers[from][towers[from].length - 1]; // Top disk of the "from" tower
+
+            // Check if the move is valid
+            if (towers[to].length === 0 || disk < towers[to][towers[to].length - 1]) {
+                towers[from].pop(); // Remove disk from "from" tower
+                towers[to].push(disk); // Add disk to "to" tower
+                renderTowers();
+
+                // Check if the game is won
+                if (towers[2].length === numberOfDisks) {
+                    document.getElementById('message').textContent = 'Congratulations! 🎊 You won!';
+                }
+            } else {
+                document.getElementById('message').textContent = 'Invalid move! Larger disks cannot be placed on smaller ones.';
+            }
+        }
+
+        function resetTowerColors() {
+            const towerElements = document.querySelectorAll('.tower');
+            towerElements.forEach(tower => {
+                tower.style.backgroundColor = '#555';
+            });
+        }
+
+        // Initialized with 3 disks
+        startGame();
+    </script>
+</body>
+</html>
+<!-- Divakar sharma 🤖👍🏼 -->

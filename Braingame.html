@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Math Game</title>
+    <style>
+        body { font-family: Arial, sans-serif;  text-align: center; margin: 0; padding: 20px;
+        min-height: 100vh; background: linear-gradient(135deg, #83a4d4 0%, #b6fbff 100%);
+        background-size: cover; background-attachment: fixed; }
+        .game-container { max-width: 600px; margin: 0 auto; background: rgba(255, 255, 255, 0.9); padding: 20px;
+        border-radius: 15px; box-shadow: 0 0 20px rgba(0, 0, 0, 0.1); }
+        #problem { font-size: 24px; margin: 20px; padding: 15px; background: white; border-radius: 10px; display: inline-block; }
+        #answer { font-size: 20px; width: 150px; padding: 8px; border-radius: 8px; border: 2px solid #83a4d4; }
+        #timer { font-size: 18px; color: #2c3e50; margin: 15px 0; }
+        #highScore { position: absolute; top: 20px; right: 20px; background: rgba(255, 255, 255, 0.9); padding: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); font-size: 14px; }
+        button { font-size: 18px; padding: 5px 15px; margin: 5px; border-radius: 8px; background-color: #90EE90; border: none; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); transition: background-color 0.3s, box-shadow 0.3s; }
+        @keyframes highScoreFlash {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); color: #4CAF50; }
+            100% { transform: scale(1); }
+        }
+
+.new-highscore {
+    animation: highScoreFlash 1s ease-in-out;
+}
+
+button:hover { background-color: #1deb1d;
+ box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); }
+        #gameOver { color: #e74c3c; font-size: 24px; margin: 20px 0; padding: 15px; background: rgba(255, 255, 255, 0.95); border-radius: 10px; }
+        #restartButton { display: none; }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <div id="score">Score: 0</div>
+    <div id="problem"></div>
+    <input type="number" id="answer" step="1" placeholder="Answer" />
+    <button onclick="checkAnswer()">Submit</button>
+    <div id="timer">Time left: 30</div>
+    <div id="gameOver" style="display: none;"></div>
+    <button id="restartButton" onclick="restartGame()">Restart</button>
+</div>
+    <div id="highScore">High Score: Loading...</div>
+    <script>
+        let highScore = { score: 0, date: null };
+        let score = 0;
+        let currentAnswer;
+        let timeLeft;
+        let timerId;
+
+        function loadHighScore() {
+            const saved = localStorage.getItem('mathGameHighScore');
+            if (saved) {
+                highScore = JSON.parse(saved);
+                updateHighScoreDisplay();
+            }
+        }
+
+        function updateHighScoreDisplay() {
+            const highScoreElement = document.getElementById('highScore');
+            if (highScore.score > 0) {
+               const date = new Date(highScore.date);
+               highScoreElement.innerHTML = `High Score: ${highScore.score}<br> <small>${date.toLocaleDateString()} ${date.toLocaleTimeString()}</small> `;
+            } else {
+                highScoreElement.textContent = "High Score: 0";
+            }
+        }
+
+        function getRandomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateProblem() {
+            const operators = ['+', '-', '*', '/'];
+            const numOperators = getRandomInt(2, 3);
+            let expression = '';
+            
+            for (let i = 0; i <= numOperators; i++) {
+                if (i === 0) {
+                    expression += getRandomInt(1, 10);
+                } else {
+                    const op = operators[getRandomInt(0, 3)];
+                    
+                    if (op === '/') {
+                        // Get current number before adding division
+                        const parts = expression.split(/[\+\-\*\/]/);
+                        const lastNumber = parseInt(parts[parts.length - 1]);
+                        
+                        // Find valid divisors
+                        const divisors = [];
+                        for (let j = 1; j <= lastNumber; j++) {
+                            if (lastNumber % j === 0) divisors.push(j);
+                        }
+                        
+                        const nextNumber = divisors[getRandomInt(0, divisors.length - 1)];
+                        expression += op + nextNumber;
+                    } else {
+                        expression += op + getRandomInt(1, 10);
+                    }
+                }
+            }
+            
+            // Ensure valid expression
+            const result = eval(expression);
+            if (isNaN(result)) return generateProblem(); // Regenerate if invalid
+            
+            return {
+                expression: expression,
+                result: Math.floor(result)
+            };
+        }
+
+        function startTimer() {
+            timeLeft = 30;
+            document.getElementById('timer').textContent = `Time left: ${timeLeft}`;
+            
+            if (timerId) clearInterval(timerId);
+            timerId = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = `Time left: ${timeLeft}`;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function checkAnswer() {
+            const userInput = document.getElementById('answer').value;
+            const userAnswer = parseInt(userInput);
+            
+            if (userInput === '' || !Number.isInteger(userAnswer)) {
+                alert('Please enter a valid integer!');
+                return;
+            }
+            
+            if (userAnswer === currentAnswer) {
+                score++;
+                document.getElementById('score').textContent = `Score: ${score}`;
+                newProblem();
+                document.getElementById('answer').value = '';
+            } else {
+                endGame();
+            }
+        }
+
+        function endGame() {
+            clearInterval(timerId);
+
+            // Check and update high score
+            if (score > highScore.score) {
+                highScore = {
+                    score: score,
+                    date: new Date().toISOString()
+                };
+                localStorage.setItem('mathGameHighScore', JSON.stringify(highScore));
+                updateHighScoreDisplay();
+            }
+            document.getElementById('gameOver').style.display = 'block';
+            document.getElementById('gameOver').innerHTML = 
+                `Game Over! Final Score: ${score}<br>
+                 Correct answer was: ${currentAnswer}`;
+            document.getElementById('answer').disabled = true;
+            document.querySelector('button').disabled = true;
+            document.getElementById('restartButton').style.display = 'inline-block';
+        }
+
+        function restartGame() {
+            // Reset game state
+            score = 0;
+            document.getElementById('score').textContent = `Score: ${score}`;
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('answer').disabled = false;
+            document.querySelector('button').disabled = false;
+            document.getElementById('restartButton').style.display = 'none';
+            document.getElementById('answer').value = '';
+            
+            // Start new game
+            newProblem();
+        }
+
+        function newProblem() {
+            const problem = generateProblem();
+            currentAnswer = problem.result;
+            document.getElementById('problem').textContent = problem.expression;
+            startTimer();
+        }
+
+        // Start the game
+        newProblem();
+
+       // Initialize high score
+        loadHighScore();
+    </script>
+</body>
+</html>
+<!-- Divakar sharma 🤖👍🏼 -->
