@@ -5,10 +5,10 @@ Welcome to **Offline Game Zone** – a collection of classic, interactive, and b
 ---
 
 ## 📜 Table of Contents
-- [Featured Games](#featured-games)
-  - [Box Grid Duel](#box-grid-duel)
-  - [Brainiac Math Challenge](#brainiac-math-challenge)
-  - [Tower of Hanoi](#tower-of-hanoi)
+- [Featured Games](#-featured-games)
+  - [Box Grid Duel](#-box-grid-duel)
+  - [Brainiac Math Challenge](#-brainiac-math-challenge)
+  - [Tower of Hanoi](#-tower-of-hanoi)
 - [Contribute](#-contribute)
 - [Acknowledgments](#-acknowledgments)
 
